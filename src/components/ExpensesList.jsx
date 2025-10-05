@@ -1,91 +1,99 @@
-import React from "react";
-import { useExpenses } from "../context/ExpenseContext"; // custom hook from your context
+import React, { useState } from "react";
+import { useExpenses } from "../context/ExpenseContext";
 
-const ExpenseList = () => {
+const ExpensesList = () => {
     const { expenses, deleteExpense } = useExpenses();
+    const [categoryFilter, setCategoryFilter] = useState("all");
 
-    if (expenses.length === 0) {
-        return (
-            <div className="flex justify-center mt-10">
-                <p className="text-gray-500 text-lg font-medium bg-gray-50 px-6 py-3 rounded-lg shadow-sm text-center">
-                    No expenses added yet 💸
-                </p>
-            </div>
-        );
-    }
+    const CategoryOptions = [
+        { value: "all", label: "All" },
+        { value: "food", label: "Food & Dining" },
+        { value: "transport", label: "Transportation" },
+        { value: "entertainment", label: "Entertainment" },
+        { value: "shopping", label: "Shopping" },
+        { value: "utilities", label: "Utilities" },
+        { value: "health", label: "Health & Medical" },
+        { value: "other", label: "Other" },
+    ];
+
+    // Filter
+    const filteredExpenses = expenses.filter(
+        (expense) =>
+            categoryFilter === "all" || expense.category === categoryFilter
+    );
+
+    // Sort by date (newest first)
+    const sortedExpenses = [...filteredExpenses].sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+    );
+
+    const handleDelete = (id) => {
+        deleteExpense(id);
+    };
 
     return (
-        <div className="bg-white shadow-lg rounded-2xl p-6 w-full mt-8 mx-auto border border-gray-100">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-expense-dark tracking-tight">
-                Expense List
-            </h2>
+        <div className="w-full mx-auto mt-8 p-6 rounded-2xl shadow-lg bg-gradient-to-br from-white to-gray-50 border border-gray-200">
+            {/* Header & Filter */}
+            <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h2 className="text-2xl font-semibold text-expense-dark tracking-wide">
+                    💰 Expense List
+                </h2>
 
-            <div className="overflow-x-auto rounded-lg">
-                <table className="min-w-full border border-gray-100 text-sm sm:text-base">
-                    <thead className="bg-blue-50">
-                        <tr>
-                            <th className="py-3 px-4 sm:px-6 text-left font-semibold text-gray-700 border-b">
-                                Description
-                            </th>
-                            <th className="py-3 px-4 sm:px-6 text-left font-semibold text-gray-700 border-b">
-                                Amount
-                            </th>
-                            <th className="py-3 px-4 sm:px-6 text-left font-semibold text-gray-700 border-b">
-                                Category
-                            </th>
-                            <th className="py-3 px-4 sm:px-6 text-left font-semibold text-gray-700 border-b">
-                                Date
-                            </th>
-                            <th className="py-3 px-4 sm:px-6 text-center font-semibold text-gray-700 border-b">
-                                Action
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {expenses.map((exp, index) => (
-                            <tr
-                                key={exp.id}
-                                className={`${
-                                    index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                                } hover:bg-blue-50 transition duration-150`}
-                            >
-                                <td className="py-3 px-4 sm:px-6 text-gray-800 break-words max-w-[150px] sm:max-w-none">
-                                    {exp.description}
-                                </td>
-                                <td className="py-3 px-4 sm:px-6 text-gray-800 font-medium whitespace-nowrap">
-                                    ₹{exp.amount}
-                                </td>
-                                <td className="py-3 px-4 sm:px-6 text-gray-600 whitespace-nowrap">
-                                    {exp.category}
-                                </td>
-                                <td className="py-3 px-4 sm:px-6 text-gray-500 whitespace-nowrap">
-                                    {exp.date}
-                                </td>
-                                <td className="py-3 px-4 sm:px-6 text-center">
-                                    <button
-                                        onClick={() => deleteExpense(exp.id)}
-                                        className="bg-red-100 text-red-600 hover:bg-red-600 hover:text-white px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 shadow-sm"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <select
+                    className="border border-gray-300 rounded-md px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                >
+                    {CategoryOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
             </div>
 
-            {/* Mobile View: Compact Summary */}
-            <div className="mt-6 grid grid-cols-2 sm:hidden gap-3 text-center text-sm">
-                <div className="bg-blue-50 p-2 rounded-lg font-semibold text-blue-700">
-                    Total Expenses
-                </div>
-                <div className="bg-green-50 p-2 rounded-lg font-semibold text-green-700">
-                    {expenses.length}
-                </div>
-            </div>
+            {/* No expenses message */}
+            {sortedExpenses.length === 0 ? (
+                <p className="text-gray-500 text-center py-10 text-lg font-medium">
+                    No expenses found for this category 😕
+                </p>
+            ) : (
+                <ul className="space-y-4">
+                    {sortedExpenses.map((expense) => (
+                        <li
+                            key={expense.id}
+                            className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white border border-gray-100 shadow-sm rounded-xl p-4 hover:shadow-md transition-shadow duration-300"
+                        >
+                            <div>
+                                <p className="text-lg font-semibold text-gray-800">
+                                    {expense.title}
+                                </p>
+
+                                <p className="text-sm text-gray-500">
+                                    {expense.category} • {expense.description}•{" "}
+                                    {new Date(
+                                        expense.date
+                                    ).toLocaleDateString()}
+                                </p>
+                            </div>
+
+                            <div className="flex items-center gap-4 mt-3 sm:mt-0">
+                                <span className="font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded-md">
+                                    ₹{expense.amount}
+                                </span>
+                                <button
+                                    onClick={() => handleDelete(expense.id)}
+                                    className="bg-red-500 text-white px-4 py-1.5 rounded-lg font-medium hover:bg-red-600 transition-colors duration-200"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     );
 };
 
-export default ExpenseList;
+export default ExpensesList;

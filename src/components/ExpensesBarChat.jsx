@@ -12,22 +12,19 @@ import {
 } from "recharts";
 
 const ExpensesBarChart = ({ data }) => {
-    // Define colors for each category
     const CATEGORY_COLORS = {
-        food: "#22c55e", // green
-        transport: "#3b82f6", // blue
-        shopping: "#ec4899", // pink
-        health: "#ef4444", // red
-        other: "#6b7280", // gray
-        entertainment: "#8b5cf6", // purple
-        utilities: "#eab308", // yellow
+        food: "#22c55e",
+        transport: "#3b82f6",
+        shopping: "#ec4899",
+        health: "#ef4444",
+        other: "#6b7280",
+        entertainment: "#8b5cf6",
+        utilities: "#eab308",
     };
 
     if (!data || data.length === 0) {
         return (
-            <div className="text-center text-gray-500">
-                No data available
-            </div>
+            <div className="text-center text-gray-500">No data available</div>
         );
     }
 
@@ -35,10 +32,12 @@ const ExpensesBarChart = ({ data }) => {
 
     const CustomTooltip = ({ active, payload }) => {
         if (active && payload && payload.length) {
-            const { name, value } = payload[0].payload;
+            const { name, value } = payload[0];
             return (
                 <div className="bg-white p-3 rounded-md shadow-md border border-gray-200">
-                    <p className="font-medium text-gray-800">{name}</p>
+                    <p className="font-medium text-gray-800 capitalize">
+                        {name}
+                    </p>
                     <p className="text-gray-700">₹{value.toFixed(2)}</p>
                 </div>
             );
@@ -54,12 +53,15 @@ const ExpensesBarChart = ({ data }) => {
             >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-                <YAxis />
+                <YAxis tickFormatter={(val) => `₹${val}`} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
                 <Bar dataKey="value" name="Amount (₹)">
                     {data.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={getColor(entry.name)} />
+                        <Cell
+                            key={`cell-${index}`}
+                            fill={getColor(entry.name)}
+                        />
                     ))}
                 </Bar>
             </BarChart>
